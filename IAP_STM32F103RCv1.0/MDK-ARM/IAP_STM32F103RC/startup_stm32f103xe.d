@@ -1,0 +1,1 @@
+iap_stm32f103rc\startup_stm32f103xe.o: startup_stm32f103xe.s
