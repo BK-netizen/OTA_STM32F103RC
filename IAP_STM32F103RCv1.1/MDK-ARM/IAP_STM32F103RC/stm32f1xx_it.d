@@ -25,6 +25,7 @@ iap_stm32f103rc\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ha
 iap_stm32f103rc\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 iap_stm32f103rc\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 iap_stm32f103rc\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
+iap_stm32f103rc\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h
 iap_stm32f103rc\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 iap_stm32f103rc\stm32f1xx_it.o: ../Core/Inc/stm32f1xx_it.h
 iap_stm32f103rc\stm32f1xx_it.o: ../Core/Inc/usart.h

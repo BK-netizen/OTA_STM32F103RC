@@ -26,6 +26,7 @@ iap_stm32f103rc\usart.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_corte
 iap_stm32f103rc\usart.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 iap_stm32f103rc\usart.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 iap_stm32f103rc\usart.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
+iap_stm32f103rc\usart.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h
 iap_stm32f103rc\usart.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 iap_stm32f103rc\usart.o: D:\GEEK\ruanjian\KEIL\ARM\ARMCC\include\stdarg.h
 iap_stm32f103rc\usart.o: D:\GEEK\ruanjian\KEIL\ARM\ARMCC\include\stdio.h

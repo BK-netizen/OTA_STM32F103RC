@@ -25,8 +25,10 @@ iap_stm32f103rc\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex
 iap_stm32f103rc\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 iap_stm32f103rc\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 iap_stm32f103rc\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
+iap_stm32f103rc\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h
 iap_stm32f103rc\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 iap_stm32f103rc\main.o: ../Core/Inc/dma.h
+iap_stm32f103rc\main.o: ../Core/Inc/spi.h
 iap_stm32f103rc\main.o: ../Core/Inc/usart.h
 iap_stm32f103rc\main.o: D:\GEEK\ruanjian\KEIL\ARM\ARMCC\include\stdarg.h
 iap_stm32f103rc\main.o: D:\GEEK\ruanjian\KEIL\ARM\ARMCC\include\stdio.h
@@ -35,3 +37,4 @@ iap_stm32f103rc\main.o: ../Core/Inc/gpio.h
 iap_stm32f103rc\main.o: ../Core/Inc/delay.h
 iap_stm32f103rc\main.o: ../Core/Inc/at24c02.h
 iap_stm32f103rc\main.o: ../Core/Inc/iic.h
+iap_stm32f103rc\main.o: ../Core/Inc/W25Q64.h

@@ -20,14 +20,16 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "dma.h"
+#include "spi.h"
 #include "usart.h"
 #include "gpio.h"
-
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "delay.h"
 #include "at24c02.h"
+#include "spi.h"
+#include "W25Q64.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,8 +60,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t rbuff[256];
-uint8_t wbuff[8] = {0,1,2,3,4,5,6,7};
+
 /* USER CODE END 0 */
 
 /**
@@ -92,29 +93,35 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_USART1_UART_Init();
+  //MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
+  W25Q64_Init();
   HAL_UART_Receive_DMA(&huart1, (uint8_t *)U0_RxBuff, U0_RX_MAX + 1);
   __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
   U0Rx_PtrInit();
   IIC_Init();
-  uint16_t i =0;
-//  for(i = 0; i<256;i++)
-//  {
-//	uint8_t ret = AT24C02_Write_Byte(i, 255-i);
-//	if (ret != 0)
-//		u0_printf("Ð´ÈëÊ§°Ü µØÖ·:%d ´íÎóÂë:%d\r\n", i, ret);
-//	Delay_Ms(5);
-//  }
-  for(i = 0;i<32;i++)
+  uint16_t i,j; 
+  uint8_t wdata[256];
+  uint8_t rdata[256];
+  W25Q64_Erase64K(0);
+  for(i= 0;i< 256;i++)
   {
-	AT24C02_WritePage(i*8,wbuff);
-	Delay_Ms(5);
+	for(j = 0;j<256;j++)
+	{
+		wdata[j] = i;
+	}
+	W25Q64_PageWrite(wdata,i);
   }
-  AT24C02_ReadData(0,rbuff,256);
-  for(i = 0; i<256;i++)
+  HAL_Delay(50);
+  for(i= 0;i< 256;i++)
   {
-	u0_printf("µØÖ·%d = %x\r\n",i,rbuff[i]);
+	W25Q64_Read(rdata,i*256,256);
+	for(j = 0;j<256;j++)
+	{
+		u0_printf("µØÖ·%d =%x\r\n",i*256+j,rdata[j]);
+	}
   }
+  
   /* USER CODE END 2 */
 
   /* Infinite loop */

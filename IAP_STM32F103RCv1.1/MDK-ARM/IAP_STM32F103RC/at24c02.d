@@ -26,6 +26,7 @@ iap_stm32f103rc\at24c02.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cor
 iap_stm32f103rc\at24c02.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 iap_stm32f103rc\at24c02.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 iap_stm32f103rc\at24c02.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
+iap_stm32f103rc\at24c02.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h
 iap_stm32f103rc\at24c02.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 iap_stm32f103rc\at24c02.o: ../Core/Inc/iic.h
 iap_stm32f103rc\at24c02.o: ../Core/Inc/delay.h

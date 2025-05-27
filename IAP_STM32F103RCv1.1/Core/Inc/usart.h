@@ -36,7 +36,6 @@ extern "C" {
 
 extern UART_HandleTypeDef huart1;
 
-
 /* USER CODE BEGIN Private defines */
 #define U0_RX_SIZE 2048                 //接收缓冲区长度
 #define U0_TX_SIZE 2048                 //发送缓冲区长度
