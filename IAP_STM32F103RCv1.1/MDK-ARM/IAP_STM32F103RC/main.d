@@ -38,3 +38,4 @@ iap_stm32f103rc\main.o: ../Core/Inc/delay.h
 iap_stm32f103rc\main.o: ../Core/Inc/at24c02.h
 iap_stm32f103rc\main.o: ../Core/Inc/iic.h
 iap_stm32f103rc\main.o: ../Core/Inc/W25Q64.h
+iap_stm32f103rc\main.o: ../Core/Inc/fmc.h

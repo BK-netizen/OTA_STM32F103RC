@@ -30,6 +30,7 @@
 #include "at24c02.h"
 #include "spi.h"
 #include "W25Q64.h"
+#include "fmc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -60,7 +61,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+uint32_t wbuff[1024];
 /* USER CODE END 0 */
 
 /**
@@ -100,27 +101,46 @@ int main(void)
   __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
   U0Rx_PtrInit();
   IIC_Init();
-  uint16_t i,j; 
-  uint8_t wdata[256];
-  uint8_t rdata[256];
-  W25Q64_Erase64K(0);
-  for(i= 0;i< 256;i++)
+  u0_printf("hello\r\n");
+  //static uint32_t wbuff[1024];
+  uint32_t i;
+  for(i=0;i<1024;i++)
   {
-	for(j = 0;j<256;j++)
-	{
-		wdata[j] = i;
-	}
-	W25Q64_PageWrite(wdata,i);
+	wbuff[i] = 0x12345678;
   }
-  HAL_Delay(50);
-  for(i= 0;i< 256;i++)
+  FLASH_ERASE(50,2);
+  HAL_Delay(10);
+  FLASH_WRITE(50*2048+0x08000000,wbuff,1024*4);
+  HAL_Delay(10);
+//  u0_printf("write success\r\n");
+  for(i=0;i<1024;i++)
   {
-	W25Q64_Read(rdata,i*256,256);
-	for(j = 0;j<256;j++)
-	{
-		u0_printf("µØÖ·%d =%x\r\n",i*256+j,rdata[j]);
-	}
+	u0_printf("%x\r\n",(*((uint32_t *)(50*2048+0x08000000+(i*4)))));
   }
+//  u0_printf("%x\r\n",*((uint32_t *)(0x08019FF2)));
+
+ 
+//  uint16_t i,j; 
+//  uint8_t wdata[256];
+//  uint8_t rdata[256];
+//  W25Q64_Erase64K(0);
+//  for(i= 0;i< 256;i++)
+//  {
+//	for(j = 0;j<256;j++)
+//	{
+//		wdata[j] = i;
+//	}
+//	W25Q64_PageWrite(wdata,i);
+//  }
+//  HAL_Delay(50);
+//  for(i= 0;i< 256;i++)
+//  {
+//	W25Q64_Read(rdata,i*256,256);
+//	for(j = 0;j<256;j++)
+//	{
+//		u0_printf("µØÖ·%d =%x\r\n",i*256+j,rdata[j]);
+//	}
+//  }
   
   /* USER CODE END 2 */
 
