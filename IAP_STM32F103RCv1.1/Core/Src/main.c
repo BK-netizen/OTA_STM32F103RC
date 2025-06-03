@@ -31,6 +31,7 @@
 #include "spi.h"
 #include "W25Q64.h"
 #include "fmc.h"
+#include "boot.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,13 +45,14 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+uint32_t    BootStateFlag;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+OTA_InfoCB OTA_Info;  
+UpDataA_CB UpDataA;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -62,6 +64,7 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 uint32_t wbuff[1024];
+uint8_t rbuff[50];
 /* USER CODE END 0 */
 
 /**
@@ -71,7 +74,7 @@ uint32_t wbuff[1024];
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+  
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -96,27 +99,42 @@ int main(void)
   MX_USART1_UART_Init();
   //MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  W25Q64_Init();
+  HAL_Delay(10);
+  //W25Q64_Init();
   HAL_UART_Receive_DMA(&huart1, (uint8_t *)U0_RxBuff, U0_RX_MAX + 1);
   __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
   U0Rx_PtrInit();
   IIC_Init();
-  u0_printf("hello\r\n");
+  
+  OTA_Info.OTA_flag =0xAABB1122;
+  for(uint8_t i=0;i<11;i++)
+  {
+	OTA_Info.OTA_FileLen[i] = i;
+  }
+  AT24C02_WriteOTAInfo();
+  AT24C02_ReadOTAInfo();
+  AT24C02_ReadData(0,rbuff,OTA_InfoCB_SIZE);
+  for(uint8_t i=0;i<50;i++)
+  {
+	u0_printf("OTA_flag = %d\r\n",rbuff[i]);
+  }
+  BOOT_Branch();
+
   //static uint32_t wbuff[1024];
-  uint32_t i;
-  for(i=0;i<1024;i++)
-  {
-	wbuff[i] = 0x12345678;
-  }
-  FLASH_ERASE(50,2);
-  HAL_Delay(10);
-  FLASH_WRITE(50*2048+0x08000000,wbuff,1024*4);
-  HAL_Delay(10);
-//  u0_printf("write success\r\n");
-  for(i=0;i<1024;i++)
-  {
-	u0_printf("%x\r\n",(*((uint32_t *)(50*2048+0x08000000+(i*4)))));
-  }
+//  uint32_t i;
+//  for(i=0;i<1024;i++)
+//  {
+//	wbuff[i] = 0x12345678;
+//  }
+//  FLASH_ERASE(50,2);
+//  HAL_Delay(10);
+//  FLASH_WRITE(50*2048+0x08000000,wbuff,1024*4);
+//  HAL_Delay(10);
+////  u0_printf("write success\r\n");
+//  for(i=0;i<1024;i++)
+//  {
+//	u0_printf("%x\r\n",(*((uint32_t *)(50*2048+0x08000000+(i*4)))));
+//  }
 //  u0_printf("%x\r\n",*((uint32_t *)(0x08019FF2)));
 
  
@@ -151,6 +169,35 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  //OTA事件
+	  if(BootStateFlag && UPDATA_A_FLAG)
+	  {
+		  if(OTA_Info.OTA_FileLen[UpDataA.W25Q64_BlockNB] % 4 == 0)   //四字节对齐
+		  {
+				uint8_t  i =0;
+			    FLASH_ERASE(STM_A_START_PAGE,STM32_A_PAGE_NUM);
+			    for(i=0;i<OTA_Info.OTA_FileLen[UpDataA.W25Q64_BlockNB] /STM32_PAGE_SIZE;i++)   //按页读写	
+				{
+					W25Q64_Read(UpDataA.Updatabuff,i*STM32_PAGE_SIZE + UpDataA.W25Q64_BlockNB*64*1024,STM32_PAGE_SIZE);    //按block分，一个block64K
+					FLASH_WRITE(STM32_A_SADDR+i*STM32_PAGE_SIZE,(uint32_t *)UpDataA.Updatabuff,STM32_PAGE_SIZE);
+				}
+				if((OTA_Info.OTA_FileLen[UpDataA.W25Q64_BlockNB] % STM32_PAGE_SIZE) != 0)
+				{
+					W25Q64_Read(UpDataA.Updatabuff,i*STM32_PAGE_SIZE + UpDataA.W25Q64_BlockNB*64*1024,(OTA_Info.OTA_FileLen[UpDataA.W25Q64_BlockNB] % STM32_PAGE_SIZE));    //按block分，一个block64K
+					FLASH_WRITE(STM32_A_SADDR+i*STM32_PAGE_SIZE,(uint32_t *)UpDataA.Updatabuff,(OTA_Info.OTA_FileLen[UpDataA.W25Q64_BlockNB] % STM32_PAGE_SIZE));
+				}
+				if(UpDataA.W25Q64_BlockNB == 0)
+				{
+					OTA_Info.OTA_flag = 0;
+					AT24C02_WriteOTAInfo();
+				}
+				NVIC_SystemReset();
+		  }
+		  else{
+				u0_printf("长度错误\r\n");
+				BootStateFlag &= ~UPDATA_A_FLAG;
+		  }
+	  }
 
   }
   /* USER CODE END 3 */

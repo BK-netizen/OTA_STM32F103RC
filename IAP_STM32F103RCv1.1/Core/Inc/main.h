@@ -37,7 +37,31 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+#define 		STM32_FLASH_SADDR		0X08000000
+#define 		STM32_PAGE_SIZE			2048
+#define 		STM32_PAGE_NUM			128
+#define 		STM32_B_PAGE_NUM		10
+#define 		STM32_A_PAGE_NUM		STM32_PAGE_NUM - STM32_B_PAGE_NUM
+#define			STM_A_START_PAGE		STM32_B_PAGE_NUM
+//#define 		STM32_A_SADDR			STM32_FLASH_SADDR + STM_A_START_PAGE * STM32_PAGE_SIZE
+#define 		STM32_A_SADDR           0x08010000
+#define 		OTA_SET_FLAG			0xAABB1122    //小端模式，低字节在低地址
+//#define 		OTA_SET_FLAG			0x03020100
 
+
+#define 		UPDATA_A_FLAG			0x00000001
+
+typedef struct{
+	uint32_t OTA_flag;
+	uint32_t OTA_FileLen[11];
+}OTA_InfoCB;
+
+#define			OTA_InfoCB_SIZE			sizeof(OTA_InfoCB)
+	
+typedef struct{
+	uint8_t  Updatabuff[STM32_PAGE_SIZE];
+	uint32_t W25Q64_BlockNB; 
+}UpDataA_CB;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -47,7 +71,9 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-
+extern OTA_InfoCB OTA_Info;
+extern UpDataA_CB UpDataA;
+extern uint32_t  BootStateFlag;
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

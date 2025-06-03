@@ -1,6 +1,6 @@
 #include "at24c02.h"
-
-
+#include "string.h"
+#include "main.h"
 //uint8_t AT24C02_Write_Byte(uint8_t addr,uint8_t wdata)
 //{
 //	IIC_Start();
@@ -97,6 +97,24 @@ uint8_t AT24C02_ReadData(uint8_t addr, uint8_t *rdata, uint16_t datalen)
 		datalen--;
 	}
 	return 0;
+}
+
+
+void AT24C02_ReadOTAInfo(void)
+{
+	memset(&OTA_Info,0,OTA_InfoCB_SIZE);
+	AT24C02_ReadData(0,(uint8_t *)&OTA_Info.OTA_flag,OTA_InfoCB_SIZE);
+}		
+
+
+//每次写8个字节
+void AT24C02_WriteOTAInfo(void)
+{
+	for(uint8_t i=0;i<OTA_InfoCB_SIZE/8;i++)
+	{
+		AT24C02_WritePage(i*8,(uint8_t *)&OTA_Info+i*8);
+		HAL_Delay(5);
+	}
 }
 
 

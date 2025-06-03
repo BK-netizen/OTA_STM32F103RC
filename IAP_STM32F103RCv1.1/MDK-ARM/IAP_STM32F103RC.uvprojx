@@ -313,7 +313,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>4</Optim>
+            <Optim>2</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -503,6 +503,11 @@
               <FileName>fmc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Core\Src\fmc.c</FilePath>
+            </File>
+            <File>
+              <FileName>boot.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\boot.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -12,6 +12,7 @@
 "iap_stm32f103rc\stm32f1xx_hal_msp.o"
 "iap_stm32f103rc\w25q64.o"
 "iap_stm32f103rc\fmc.o"
+"iap_stm32f103rc\boot.o"
 "iap_stm32f103rc\stm32f1xx_hal_gpio_ex.o"
 "iap_stm32f103rc\stm32f1xx_hal_spi.o"
 "iap_stm32f103rc\stm32f1xx_hal.o"
