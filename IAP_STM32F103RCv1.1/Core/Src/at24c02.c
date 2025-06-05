@@ -113,7 +113,7 @@ void AT24C02_WriteOTAInfo(void)
 	for(uint8_t i=0;i<OTA_InfoCB_SIZE/8;i++)
 	{
 		AT24C02_WritePage(i*8,(uint8_t *)&OTA_Info+i*8);
-		HAL_Delay(5);
+		Delay_Ms(5);				//用HAL库延时出现问题卡死
 	}
 }
 

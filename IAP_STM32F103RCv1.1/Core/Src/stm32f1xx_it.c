@@ -224,7 +224,7 @@ void USART1_IRQHandler(void)
 	if(__HAL_UART_GET_FLAG(&huart1,UART_FLAG_IDLE) != 0)
 	{	
 		__HAL_UART_CLEAR_IDLEFLAG(&huart1);
-		U0CB.URxCounter += (U0_RX_MAX+1) - __HAL_DMA_GET_COUNTER(&hdma_usart1_rx);        				//+=操作，将本次的接收数量，累计到URxCounter变量
+		U0CB.URxCounter += (U0_RX_MAX+1) - __HAL_DMA_GET_COUNTER(&hdma_usart1_rx);        //+=操作，将本次的接收数量，累计到URxCounter变量
 		U0CB.URxDataIN->end = &U0_RxBuff[U0CB.URxCounter-1];                             //IN指针指向的结构体中的e指针记录本次接收的结束位置
 		U0CB.URxDataIN++;                                                                //IN指针后移
 		if(U0CB.URxDataIN == U0CB.URxDataEND){                                           //如何后移到了END标记的位置，进入if
@@ -241,7 +241,7 @@ void USART1_IRQHandler(void)
 		//dma_transfer_number_config(DMA0,DMA_CH4,U0_RX_MAX+1);                            //重新设置接收量
 		//dma_memory_address_config(DMA0,DMA_CH4,(uint32_t)U0CB.URxDataIN->start);         //重新设置接收位置
 		//HAL_DMA_Start(&hdma_usart1_rx,(uint32_t)&USART1->DR,(uint32_t)U0CB.URxDataIN->start,U0_RX_MAX+1);  
-		HAL_UART_DMAStop(&huart1);					//需要关了才能重新接收更新接收地址
+		HAL_UART_DMAStop(&huart1);															//需要关了才能重新接收更新接收地址
 		HAL_UART_Receive_DMA(&huart1,U0CB.URxDataIN->start, U0_RX_MAX + 1);
 		
 	}

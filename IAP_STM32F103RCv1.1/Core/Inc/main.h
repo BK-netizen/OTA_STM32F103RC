@@ -43,13 +43,15 @@ extern "C" {
 #define 		STM32_B_PAGE_NUM		10
 #define 		STM32_A_PAGE_NUM		STM32_PAGE_NUM - STM32_B_PAGE_NUM
 #define			STM_A_START_PAGE		STM32_B_PAGE_NUM
-//#define 		STM32_A_SADDR			STM32_FLASH_SADDR + STM_A_START_PAGE * STM32_PAGE_SIZE
-#define 		STM32_A_SADDR           0x08010000
+#define 		STM32_A_SADDR			STM32_FLASH_SADDR + STM_A_START_PAGE * STM32_PAGE_SIZE
+//#define 		STM32_A_SADDR           0x08010000
 #define 		OTA_SET_FLAG			0xAABB1122    //小端模式，低字节在低地址
 //#define 		OTA_SET_FLAG			0x03020100
 
 
 #define 		UPDATA_A_FLAG			0x00000001
+#define 		IAP_XMODEMC_FLAG		0x00000002				//发C过程
+#define 		IAP_XMODEMD_FLAG		0x00000004				//接收数据过程
 
 typedef struct{
 	uint32_t OTA_flag;
@@ -61,6 +63,9 @@ typedef struct{
 typedef struct{
 	uint8_t  Updatabuff[STM32_PAGE_SIZE];
 	uint32_t W25Q64_BlockNB; 
+	uint32_t XmodemTimeout;
+	uint32_t XmodemNB;	
+	uint32_t XmodemCrc;	
 }UpDataA_CB;
 /* USER CODE END ET */
 

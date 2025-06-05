@@ -65,6 +65,7 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN 0 */
 uint32_t wbuff[1024];
 uint8_t rbuff[50];
+uint8_t crcbuf[5] = {0x01,0x02,0x03,0x04,0x05};
 /* USER CODE END 0 */
 
 /**
@@ -97,27 +98,27 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_USART1_UART_Init();
-  //MX_SPI1_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  HAL_Delay(10);
-  //W25Q64_Init();
+  //HAL_Delay(10);
+  W25Q64_Init();
   HAL_UART_Receive_DMA(&huart1, (uint8_t *)U0_RxBuff, U0_RX_MAX + 1);
   __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
   U0Rx_PtrInit();
   IIC_Init();
   
-  OTA_Info.OTA_flag =0xAABB1122;
-  for(uint8_t i=0;i<11;i++)
-  {
-	OTA_Info.OTA_FileLen[i] = i;
-  }
-  AT24C02_WriteOTAInfo();
-  AT24C02_ReadOTAInfo();
-  AT24C02_ReadData(0,rbuff,OTA_InfoCB_SIZE);
-  for(uint8_t i=0;i<50;i++)
-  {
-	u0_printf("OTA_flag = %d\r\n",rbuff[i]);
-  }
+//  OTA_Info.OTA_flag =0xAABB1122;
+//  for(uint8_t i=0;i<11;i++)
+//  {
+//	OTA_Info.OTA_FileLen[i] = i;
+//  }
+//  AT24C02_WriteOTAInfo();
+//  AT24C02_ReadOTAInfo();
+//  AT24C02_ReadData(0,rbuff,OTA_InfoCB_SIZE);
+//  for(uint8_t i=0;i<50;i++)
+//  {
+//	u0_printf("OTA_flag = %x\r\n",rbuff[i]);
+//  }
   BOOT_Branch();
 
   //static uint32_t wbuff[1024];
@@ -169,8 +170,29 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  HAL_Delay(10);
+		if(U0CB.URxDataOUT != U0CB.URxDataIN)
+		{                                                                 										//IN 和 OUT不相等的时候进入if，说明缓冲区有数据了
+			BootLoader_Event(U0CB.URxDataOUT->start,U0CB.URxDataOUT->end - U0CB.URxDataOUT->start + 1);        //调用BootLoader_Event处理数据
+			U0CB.URxDataOUT++;                                                                                 //OUT后挪
+			if(U0CB.URxDataOUT == U0CB.URxDataEND)
+			{                                                            										//如果挪到了END标记的最后一个成员，进入if
+				U0CB.URxDataOUT = &U0CB.URxDataPtr[0];                      									//重新回到数组0号成员
+			}
+		}
+		if(BootStateFlag&IAP_XMODEMC_FLAG)
+		{     										//如果IAP_XMODEMC_FLAG标志位置位，表明需要发送C
+			if(UpDataA.XmodemTimeout>=100)
+			{     	
+				u0_printf("C");               
+				UpDataA.XmodemTimeout = 0;     	
+			}
+			UpDataA.XmodemTimeout++;           	
+		}	
+	  
+	  
 	  //OTA事件
-	  if(BootStateFlag && UPDATA_A_FLAG)
+	  if(BootStateFlag & UPDATA_A_FLAG)
 	  {
 		  if(OTA_Info.OTA_FileLen[UpDataA.W25Q64_BlockNB] % 4 == 0)   //四字节对齐
 		  {

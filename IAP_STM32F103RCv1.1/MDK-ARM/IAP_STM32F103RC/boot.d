@@ -33,3 +33,4 @@ iap_stm32f103rc\boot.o: D:\GEEK\ruanjian\KEIL\ARM\ARMCC\include\stdarg.h
 iap_stm32f103rc\boot.o: D:\GEEK\ruanjian\KEIL\ARM\ARMCC\include\stdio.h
 iap_stm32f103rc\boot.o: D:\GEEK\ruanjian\KEIL\ARM\ARMCC\include\string.h
 iap_stm32f103rc\boot.o: ../Core/Inc/spi.h
+iap_stm32f103rc\boot.o: ../Core/Inc/fmc.h
