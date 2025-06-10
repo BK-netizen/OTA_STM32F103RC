@@ -44,18 +44,23 @@ extern "C" {
 #define 		STM32_A_PAGE_NUM		STM32_PAGE_NUM - STM32_B_PAGE_NUM
 #define			STM_A_START_PAGE		STM32_B_PAGE_NUM
 #define 		STM32_A_SADDR			STM32_FLASH_SADDR + STM_A_START_PAGE * STM32_PAGE_SIZE
-//#define 		STM32_A_SADDR           0x08010000
+
 #define 		OTA_SET_FLAG			0xAABB1122    //小端模式，低字节在低地址
-//#define 		OTA_SET_FLAG			0x03020100
+
 
 
 #define 		UPDATA_A_FLAG			0x00000001
 #define 		IAP_XMODEMC_FLAG		0x00000002				//发C过程
 #define 		IAP_XMODEMD_FLAG		0x00000004				//接收数据过程
+#define 		OTA_VER_FLAG			0x00000008				//查询版本号
+#define 		CMD5_FLAG				0x00000010
+#define 		CMD5_X_FLAG				0x00000020
+#define 		CMD6_FLAG				0x00000040				
 
 typedef struct{
 	uint32_t OTA_flag;
 	uint32_t OTA_FileLen[11];
+	uint8_t  OTA_Version[32];
 }OTA_InfoCB;
 
 #define			OTA_InfoCB_SIZE			sizeof(OTA_InfoCB)

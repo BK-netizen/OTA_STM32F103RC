@@ -41,7 +41,7 @@ uint8_t BootLoader_Enter(uint8_t timeout)
 	u0_printf("%d ms内输入小写字母 w ,进入BootLoader命令行\r\n",timeout *100);
 	while(timeout--)
 	{
-		HAL_Delay(100);
+		Delay_Ms(100);
 		if(U0_RxBuff[0] == 'w')
 		{
 			return 1;
@@ -65,6 +65,7 @@ void BootLoader_Info(void)
 
 void BootLoader_Event(uint8_t *data, uint16_t datalen)
 {
+	int temp,i;
 	if(BootStateFlag == 0)  								//没发生任何事件
 	{
 		if((datalen == 1) && data[0] == '1')
@@ -79,12 +80,34 @@ void BootLoader_Event(uint8_t *data, uint16_t datalen)
 			BootStateFlag |= (IAP_XMODEMC_FLAG | IAP_XMODEMD_FLAG);
 			UpDataA.XmodemTimeout = 0;
 			UpDataA.XmodemNB = 0;
-
+		}
+		else if((datalen == 1) && data[0] == '3')
+		{
+			u0_printf("设置OTA版本号\r\n"); 
+			BootStateFlag |= OTA_VER_FLAG;	
+		}
+		else if((datalen == 1) && data[0] == '4')
+		{
+			u0_printf("查询OTA版本号\r\n");
+			AT24C02_ReadOTAInfo();
+			u0_printf("版本号为: %s\r\n",OTA_Info.OTA_Version);
+			BootLoader_Info();
+		}
+		else if((datalen == 1) && data[0] == '5')
+		{
+			u0_printf("向外部Flash下载程序\r\n");
+			BootStateFlag |= CMD5_FLAG;	
+		}
+		else if((datalen == 1) && data[0] == '6')
+		{
+			u0_printf("使用外部Flash内程序\r\n");
+			BootStateFlag |= CMD6_FLAG;	
 		}
 		else if((datalen == 1) && data[0] == '7')
 		{
 			u0_printf("重启\r\n"); 
-			HAL_Delay(10);
+			Delay_Ms(10);
+			
 			NVIC_SystemReset();
 		}
 	}
@@ -101,8 +124,17 @@ void BootLoader_Event(uint8_t *data, uint16_t datalen)
 				//由于先++了，所以这里要减1
 				if(UpDataA.XmodemNB % (STM32_PAGE_SIZE /128) == 0)    //意味着塞满了2k，可以传了
 				{
-					FLASH_WRITE(STM32_A_SADDR + ((UpDataA.XmodemNB /(STM32_PAGE_SIZE /128))-1)*STM32_PAGE_SIZE,(uint32_t *)UpDataA.Updatabuff,STM32_PAGE_SIZE);
-					
+					if(BootStateFlag & CMD5_X_FLAG)
+					{
+						for(i=0;i<8;i++)  //8次才能发完2k
+						{
+							W25Q64_PageWrite(&UpDataA.Updatabuff[i*256],UpDataA.W25Q64_BlockNB * 64 * 4 + (UpDataA.XmodemNB/8-2)*4+i);
+						}
+					}
+					else
+					{
+						FLASH_WRITE(STM32_A_SADDR + ((UpDataA.XmodemNB /(STM32_PAGE_SIZE /128))-1)*STM32_PAGE_SIZE,(uint32_t *)UpDataA.Updatabuff,STM32_PAGE_SIZE);
+					}
 				}
 				u0_printf("\x06");			//应答信号
 			}
@@ -116,13 +148,100 @@ void BootLoader_Event(uint8_t *data, uint16_t datalen)
 			u0_printf("\x06");
 			if(UpDataA.XmodemNB % (STM32_PAGE_SIZE /128) != 0)   //不满足2K部分
 			{
-				FLASH_WRITE(STM32_A_SADDR + ((UpDataA.XmodemNB /(STM32_PAGE_SIZE /128))-1)*STM32_PAGE_SIZE,(uint32_t *)UpDataA.Updatabuff,UpDataA.XmodemNB % (STM32_PAGE_SIZE /128)*128);
+				if(BootStateFlag & CMD5_X_FLAG)
+				{
+					W25Q64_PageWrite(&UpDataA.Updatabuff[i*256],UpDataA.W25Q64_BlockNB * 64 * 4 + (UpDataA.XmodemNB/8-1)*4+i);
+				}
+				else
+				{
+					FLASH_WRITE(STM32_A_SADDR + ((UpDataA.XmodemNB /(STM32_PAGE_SIZE /128))-1)*STM32_PAGE_SIZE,(uint32_t *)UpDataA.Updatabuff,UpDataA.XmodemNB % (STM32_PAGE_SIZE /128)*128);
+				}
 			}
 			BootStateFlag &= ~IAP_XMODEMD_FLAG;
-			NVIC_SystemReset();     
+			if(BootStateFlag & CMD5_X_FLAG)
+			{                           														//判断如果是命令5启动Xmodem的话，进入if
+				BootStateFlag &=~ CMD5_X_FLAG;                      							 //清除CMD5_XMODEM_FLAG
+				OTA_Info.OTA_FileLen[UpDataA.W25Q64_BlockNB] = UpDataA.XmodemNB * 128;   	//计算并保存本次传输的程序大小
+				AT24C02_WriteOTAInfo();                                 			 		//保存到24C02
+				Delay_Ms(100);                                          					//延时
+				u0_printf("%x\r\n",OTA_Info.OTA_FileLen[UpDataA.W25Q64_BlockNB]);
+				BootLoader_Info();                                      //输出命令行信息
+			}else{                                                      //判断如果不是命令5启动Xmodem的话，那就是串口IAP启动的，进入else
+				Delay_Ms(100);                                          //延时
+				NVIC_SystemReset();                                     //重启
+			}   
 		}
-		
-		
+	}
+//	else if(BootStateFlag & OTA_VER_FLAG)
+//	{
+//		if(datalen == 26)
+//		{
+//			if(sscanf((char *)data,"VER-%d.%d.%d-%d/%d/%d-%d:%d",&temp,&temp,&temp,&temp,&temp,&temp,&temp,&temp) == 8)
+//			//VER-1.2.3-2020/12/13-12:20
+//			{
+//				memset(OTA_Info.OTA_Version,0,26);
+//				memcpy(OTA_Info.OTA_Version,data,26);
+//				AT24C02_WriteOTAInfo();
+//				u0_printf("版本正确\r\n");  
+//				BootStateFlag &=~ OTA_VER_FLAG;
+//				//u0_printf("%x\r\n",BootStateFlag);
+//				BootLoader_Info();
+//			}
+//			else
+//			{
+//				u0_printf("版本号格式设置错误\r\n");
+//			}
+//		}
+//		else
+//		{
+//			u0_printf("版本号长度设置错误\r\n");
+//		}
+//	}
+	else if(BootStateFlag & CMD5_FLAG)
+	{
+		if(datalen == 1)
+		{
+			if((data[0] >= 0x31) && (data[0] <= 0x39))    // ASIC 码 1-9
+			{
+				UpDataA.W25Q64_BlockNB = data[0] - 0x30;
+				BootStateFlag |= (IAP_XMODEMC_FLAG | IAP_XMODEMD_FLAG | CMD5_X_FLAG);  //还是可以用原来发A区的Xmodem协议的代码,只不过改成了发外部Flash
+				UpDataA.XmodemTimeout = 0;
+				UpDataA.XmodemNB = 0;
+				OTA_Info.OTA_FileLen[UpDataA.W25Q64_BlockNB] = 0;
+				W25Q64_Erase64K(UpDataA.W25Q64_BlockNB);
+				u0_printf("通过Xmodem协议，向外部Flash第%d个块下载程序，请使用bin格式文件\r\n",UpDataA.W25Q64_BlockNB);
+				BootStateFlag &=~ CMD5_FLAG;   
+			}
+			else
+			{
+				u0_printf("块输入编号错误\r\n");
+			}
+		}
+		else
+		{
+			u0_printf("数据长度错误\r\n"); 
+		}
+	}
+	else if(BootStateFlag & CMD6_FLAG)
+	{
+		if(datalen == 1)
+		{
+			if((data[0] >= 0x31) && (data[0] <= 0x39))
+			{
+				UpDataA.W25Q64_BlockNB = data[0] - 0x30;
+				//AT24C02_ReadOTAInfo();				
+				BootStateFlag |= UPDATA_A_FLAG;
+				BootStateFlag &=~ CMD6_FLAG;  
+			}
+			else
+			{
+				u0_printf("编号错误\r\n"); 
+			}
+		}
+		else
+		{
+			u0_printf("数据长度错误\r\n"); 
+		}
 	}
 	
 
@@ -144,39 +263,6 @@ void LOAD_A(uint32_t addr)
 		u0_printf("跳转A分区失败\r\n"); 
 	}
 }
-//void LOAD_A(uint32_t addr)
-//{
-//	if (((*(uint32_t *)addr) >= 0x20000000) && ((*(uint32_t *)addr) <= 0x2000BFFF))
-//	{
-//		__disable_irq();
-
-//		HAL_RCC_DeInit();
-//		HAL_DeInit();
-
-//		SysTick->CTRL = 0;
-//		SysTick->LOAD = 0;
-//		SysTick->VAL = 0;
-
-//		for (int i = 0; i < 8; i++)
-//		{
-//			NVIC->ICER[i] = 0xFFFFFFFF;
-//			NVIC->ICPR[i] = 0xFFFFFFFF;
-//		}
-
-//		SCB->VTOR = addr;  // 设置中断向量表到A区
-
-//		MSR_SP(*(uint32_t *)addr);           // 设置主堆栈指针
-//		load_A = (load_a)*(uint32_t *)(addr + 4); // 复位地址
-
-//		BootLoader_Clear();  // 关闭串口和IO
-
-//		load_A();            // 跳转到A区程序
-//	}
-//	else
-//	{
-//		u0_printf("跳转A分区失败\r\n");
-//	}
-//}
 
 
 uint16_t XmodemCRC16(uint8_t *data,uint16_t datalen)

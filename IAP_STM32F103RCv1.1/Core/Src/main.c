@@ -170,7 +170,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  HAL_Delay(10);
+	  Delay_Ms(10);
 		if(U0CB.URxDataOUT != U0CB.URxDataIN)
 		{                                                                 										//IN 和 OUT不相等的时候进入if，说明缓冲区有数据了
 			BootLoader_Event(U0CB.URxDataOUT->start,U0CB.URxDataOUT->end - U0CB.URxDataOUT->start + 1);        //调用BootLoader_Event处理数据
@@ -194,10 +194,12 @@ int main(void)
 	  //OTA事件
 	  if(BootStateFlag & UPDATA_A_FLAG)
 	  {
+		  AT24C02_ReadOTAInfo();										//如果单独用6，而不用5命令，不加此段代码会有bug，OTA的值没读过来，导致更新失败
 		  if(OTA_Info.OTA_FileLen[UpDataA.W25Q64_BlockNB] % 4 == 0)   //四字节对齐
 		  {
 				uint8_t  i =0;
 			    FLASH_ERASE(STM_A_START_PAGE,STM32_A_PAGE_NUM);
+				u0_printf("OTA_FileLen: %x\r\n",OTA_Info.OTA_FileLen[UpDataA.W25Q64_BlockNB]);
 			    for(i=0;i<OTA_Info.OTA_FileLen[UpDataA.W25Q64_BlockNB] /STM32_PAGE_SIZE;i++)   //按页读写	
 				{
 					W25Q64_Read(UpDataA.Updatabuff,i*STM32_PAGE_SIZE + UpDataA.W25Q64_BlockNB*64*1024,STM32_PAGE_SIZE);    //按block分，一个block64K
@@ -213,9 +215,11 @@ int main(void)
 					OTA_Info.OTA_flag = 0;
 					AT24C02_WriteOTAInfo();
 				}
+				u0_printf("A区更新完毕\r\n");
 				NVIC_SystemReset();
 		  }
-		  else{
+		  else
+		  {
 				u0_printf("长度错误\r\n");
 				BootStateFlag &= ~UPDATA_A_FLAG;
 		  }

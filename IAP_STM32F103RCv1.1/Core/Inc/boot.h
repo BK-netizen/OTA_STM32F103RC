@@ -5,6 +5,8 @@
 #include "usart.h"
 #include "spi.h"
 #include "fmc.h"
+#include "at24c02.h"
+#include "W25Q64.h"
 
 
 typedef void (*load_a)(void);                            //函数指针类型声明

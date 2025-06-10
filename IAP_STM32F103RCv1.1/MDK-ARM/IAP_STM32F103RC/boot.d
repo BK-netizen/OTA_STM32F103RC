@@ -34,3 +34,7 @@ iap_stm32f103rc\boot.o: D:\GEEK\ruanjian\KEIL\ARM\ARMCC\include\stdio.h
 iap_stm32f103rc\boot.o: D:\GEEK\ruanjian\KEIL\ARM\ARMCC\include\string.h
 iap_stm32f103rc\boot.o: ../Core/Inc/spi.h
 iap_stm32f103rc\boot.o: ../Core/Inc/fmc.h
+iap_stm32f103rc\boot.o: ../Core/Inc/at24c02.h
+iap_stm32f103rc\boot.o: ../Core/Inc/iic.h
+iap_stm32f103rc\boot.o: ../Core/Inc/delay.h
+iap_stm32f103rc\boot.o: ../Core/Inc/W25Q64.h
